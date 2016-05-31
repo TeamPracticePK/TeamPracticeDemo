@@ -65,9 +65,19 @@ static NSString *cellId = @"cellId";
     [self loadData];
 }
 
+/**
+ * 接受到内存警告 - 释放资源
+ */
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+   
+    // 1> 释放视图，从 iOS 6.0 开始默认不在释放视图！
+    // 2> 释放资源！
+    // a) 下载的网络图片 - 目前图像保存在 模型中！不好单独释放！
+    // b) 没有完成的下载操作
+    [_downloadQueue cancelAllOperations];
+    
+
 }
 
 - (void)loadData {
@@ -120,6 +130,21 @@ static NSString *cellId = @"cellId";
     return _appInfoList.count;
     
 }
+
+
+/**
+ 问题列表
+ 1. cell 复用 -> 使用占位图像
+ 2. 图像重复下载：
+ - 图像下载完成，保存在本地
+ - 下次再使用的时候，从本地加载
+ 
+ 关于`本地`：内存缓存／沙盒缓存
+ 
+ 3. 内存缓存的解决办法
+ 1> 在模型中定义一个属性，有缺陷！内存警告的时候，不好释放在内存中缓存的图像！
+ 2> 自定义一个`缓存池`
+ */
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     

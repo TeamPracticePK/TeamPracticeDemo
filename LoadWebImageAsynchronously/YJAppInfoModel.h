@@ -7,7 +7,7 @@
 //  Copyright © 2016年 annabelle. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 @interface YJAppInfoModel : NSObject
 
@@ -16,7 +16,8 @@
 @property (nonatomic, copy) NSString *icon;
 
 /*!
- *  保存网络下载的图像
+ *  保存网络下载的图像 : 用属性保存,不好释放图像资源, 所以换其他办法
  */
-@property (nonatomic, strong) UIImage *image;
+//@property (nonatomic, strong) UIImage *image;
+
 @end

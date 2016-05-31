@@ -31,6 +31,11 @@ static NSString *cellId = @"cellId";
  */
 @property (nonatomic, strong) NSOperationQueue *downloadQueue;
 
+/*!
+ *  图像缓冲池
+ */
+@property (nonatomic, strong) NSMutableDictionary *imageCachePool;
+
 @end
 
 @implementation ViewController
@@ -62,6 +67,9 @@ static NSString *cellId = @"cellId";
     // 实例化下载列队
     _downloadQueue = [[NSOperationQueue alloc] init];
     
+    // 实例化图像缓冲池
+    _imageCachePool = [[NSMutableDictionary alloc] init];
+    
     [self loadData];
 }
 
@@ -74,6 +82,7 @@ static NSString *cellId = @"cellId";
     // 1> 释放视图，从 iOS 6.0 开始默认不在释放视图！
     // 2> 释放资源！
     // a) 下载的网络图片 - 目前图像保存在 模型中！不好单独释放！
+    [_imageCachePool removeAllObjects];
     // b) 没有完成的下载操作
     [_downloadQueue cancelAllOperations];
     
@@ -156,11 +165,14 @@ static NSString *cellId = @"cellId";
     cell.downloadLabel.text = model.download;
     
     // 判断模型中是否有 image 属性, 如果有, 直接返回该image, 如果没有, 启用占位图像
-    if (model.image != nil) {
+    // 判断缓冲池中是否缓存了 modle.icon 对应的 image
+    UIImage *cachedImage = _imageCachePool[model.icon];
+    
+    if (cachedImage != nil) {
         
         NSLog(@"此时返回的是内存缓存的图片");
         
-        cell.iconView.image = model.image;
+        cell.iconView.image = cachedImage;
         
         return cell;
         
@@ -187,7 +199,9 @@ static NSString *cellId = @"cellId";
         UIImage *image = [UIImage imageWithData:data];
         
         // *** 记录图像属性
-        model.image = image;
+        // model.image = image;
+        // *** 将图片保存到图片缓存池
+        [_imageCachePool setObject:cachedImage forKey:model.icon];
         
         // c> 主线程更新 UI
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
